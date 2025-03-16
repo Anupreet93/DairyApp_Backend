@@ -1,13 +1,308 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles */
+        body {
+          font-family: 'Poppins', sans-serif;
+          margin: 0;
+          padding: 0;
+          background-color: #f9f9f9;
+          color: #333;
+          transition: background-color 0.3s, color 0.3s;
+        }
+        .dark-mode {
+          background-color: #121212;
+          color: #f9f9f9;
+        }
+
+        /* Container */
+        .container {
+          max-width: 700px;
+          margin: 50px auto;
+          padding: 20px;
+          background: white;
+          border-radius: 10px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        .dark-mode .container {
+          background: #1e1e1e;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Buttons */
+        button {
+          padding: 12px 20px;
+          margin-top: 10px;
+          font-size: 16px;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          background-color: #007bff;
+          color: white;
+          transition: background-color 0.3s;
+        }
+        button:hover {
+          background-color: #0056b3;
+        }
+        .dark-mode button {
+          background-color: #1a73e8;
+        }
+
+        /* Inputs */
+        input, textarea, select {
+          width: 100%;
+          padding: 12px;
+          margin: 10px 0;
+          border: 1px solid #ddd;
+          border-radius: 6px;
+          font-size: 16px;
+          box-sizing: border-box;
+        }
+        .dark-mode input, .dark-mode textarea, .dark-mode select {
+          background-color: #2b2b2b;
+          color: #f9f9f9;
+          border-color: #444;
+        }
+
+        /* Section Titles */
+        h1, h2 {
+          text-align: center;
+          font-weight: 600;
+        }
+
+        /* Journal Entries */
+        .entry {
+          padding: 15px;
+          margin: 10px 0;
+          border-radius: 8px;
+          background-color: #f1f1f1;
+          transition: background-color 0.3s;
+        }
+        .dark-mode .entry {
+          background-color: #2b2b2b;
+        }
+        .entry p {
+          margin: 0 0 5px;
+        }
+        .entry small {
+          display: block;
+          font-size: 12px;
+          color: #666;
+        }
+        .dark-mode .entry small {
+          color: #ccc;
+        }
+
+        /* Toggle Link */
+        #toggle-auth-mode {
+          display: block;
+          margin-top: 10px;
+          color: #007bff;
+          text-align: center;
+          cursor: pointer;
+          text-decoration: none;
+          font-size: 14px;
+        }
+        #toggle-auth-mode:hover {
+          text-decoration: underline;
+        }
+
+        /* Sentiment */
+        .sentiment-label {
+          margin-left: 5px;
+          font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-<h1>Project Started</h1>
+<div id="app" class="container">
+    <h1>Journal App</h1>
+    <button id="toggle-dark-mode">Toggle Dark Mode</button>
+
+    <!-- Authentication Section -->
+    <div id="auth-section">
+        <h2 id="auth-title">Log In</h2>
+        <input type="text" id="username" placeholder="Username" aria-label="Username">
+        <input type="password" id="password" placeholder="Password" aria-label="Password">
+        <input type="email" id="email" placeholder="Email" aria-label="Email">
+        <input type="checkbox" id="sentiment-checkbox"><label for="sentiment-checkbox" class="sentiment-label">Set Sentiments</label>
+        <button id="auth-btn">Login</button>
+        <a id="toggle-auth-mode">Don't have an account? Sign up</a>
+        <p id="auth-msg"></p>
+    </div>
+
+    <!-- Journal Section -->
+    <div id="journal-section" style="display:none;">
+        <h2>My Journal</h2>
+        <input type="text" id="entry-title" placeholder="Title of the entry...">
+        <textarea id="new-entry" placeholder="Write your thoughts..."></textarea>
+        <label for="sentiment" class="sentiment-label">Sentiment:</label>
+        <select id="sentiment">
+            <option value="Neutral">Neutral</option>
+            <option value="Happy">Happy</option>
+            <option value="Sad">Sad</option>
+            <option value="Angry">Angry</option>
+            <option value="Anxious">Anxious</option>
+        </select>
+        <button id="add-entry-btn">Add Entry</button>
+        <div id="entries"></div>
+        <button id="logout-btn">Logout</button>
+    </div>
+</div>
+
+<script>
+    let authToken = null;
+    const API_BASE = "http://localhost:8081";
+    let isSignupMode = false;
+
+    // Toggle Dark Mode
+    document.getElementById("toggle-dark-mode").addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+    });
+
+    // Switch between Login and Signup
+    document.getElementById("toggle-auth-mode").addEventListener("click", () => {
+      isSignupMode = !isSignupMode;
+      document.getElementById("auth-title").textContent = isSignupMode ? "Sign Up" : "Log In";
+      document.getElementById("auth-btn").textContent = isSignupMode ? "Sign Up" : "Login";
+      document.getElementById("toggle-auth-mode").textContent = isSignupMode
+        ? "Already have an account? Log in"
+        : "Don't have an account? Sign up";
+    });
+
+    // Login or Signup
+    document.getElementById("auth-btn").addEventListener("click", async () => {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const sentimentEnabled = document.getElementById("sentiment-checkbox").checked;
+
+      if (!username || !password || !email) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      const endpoint = isSignupMode ? "/public/sign-up" : "/public/login";
+      const response = await fetch(API_BASE + endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, email, sentimentEnabled }),
+      });
+
+      if (response.ok) {
+        if (isSignupMode) {
+          alert("Signup successful! You can now log in.");
+          document.getElementById("toggle-auth-mode").click(); // Switch to Login mode
+        } else {
+          const data = await response.json();
+          authToken = data.token;
+          console.log(authToken);
+          document.getElementById("auth-section").style.display = "none";
+          document.getElementById("journal-section").style.display = "block";
+          loadEntries();
+        }
+      } else {
+        const errorMsg = await response.text();
+        alert(errorMsg || "An error occurred. Please try again.");
+      }
+    });
+
+    // Load Entries
+    async function loadEntries() {
+      const response = await fetch(API_BASE + "/journal", {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+
+      if (response.ok) {
+        const entries = await response.json();
+        const entriesContainer = document.getElementById("entries");
+        entriesContainer.innerHTML = entries
+          .map(entry => `
+            <div class="entry">
+              <p><strong>${entry.title}</strong></p>
+              <p>${entry.content}</p>
+              <small>${new Date(entry.date).toLocaleString()}</small>
+              <small>Sentiment: ${entry.sentiment || "Neutral"}</small>
+              <button onclick="deleteEntry('${entry.id}')">Delete</button>
+            </div>
+          `)
+          .join("");
+      }
+    }
+
+    // Add Entry
+document.getElementById("add-entry-btn").addEventListener("click", async () => {
+  const title = document.getElementById("entry-title").value.trim();
+  const content = document.getElementById("new-entry").value.trim();
+  const sentiment = document.getElementById("sentiment").value;
+
+  // Check if authToken is available
+  if (!authToken) {
+    alert("You are not logged in. Please log in first.");
+    return;
+  }
+
+  // Validate inputs
+  if (!title || !content) {
+    alert("Please fill in both the title and content.");
+    return;
+  }
+
+  try {
+    // Send the request to add a journal entry
+    const response = await fetch(`${API_BASE}/journal`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authToken}`, // Ensure token is included
+      },
+      body: JSON.stringify({ title, content, sentiment }),
+    });
+
+    // Handle the response
+    if (response.ok) {
+      // Clear input fields and reload entries
+      document.getElementById("entry-title").value = "";
+      document.getElementById("new-entry").value = "";
+      loadEntries(); // Reload the entries
+    } else if (response.status === 403) {
+      alert("You do not have permission to perform this action. Please log in again.");
+    } else {
+      const errorText = await response.text();
+      alert(`Error: ${errorText}`);
+    }
+  } catch (error) {
+    console.error("Error adding journal entry:", error);
+    alert("An error occurred while adding the entry. Please try again later.");
+  }
+});
+
+    // Delete Entry
+    async function deleteEntry(entryId) {
+      const response = await fetch(API_BASE + `/journal/id/${entryId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+
+      if (response.ok) {
+        loadEntries(); // Refresh list of entries
+      } else {
+        alert("Failed to delete the entry.");
+      }
+    }
+
+    // Logout
+    document.getElementById("logout-btn").addEventListener("click", () => {
+      authToken = null;
+      document.getElementById("journal-section").style.display = "none";
+      document.getElementById("auth-section").style.display = "block";
+    });
+</script>
 </body>
 </html>

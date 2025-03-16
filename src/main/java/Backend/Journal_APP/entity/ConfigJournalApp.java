@@ -1,6 +1,8 @@
 package Backend.Journal_APP.entity;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -8,47 +10,26 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 
 
+@Document(collection = "config_journal_app")
+@Getter
+@Setter
+public class ConfigJournalApp {
+   String key;
+   String value;
 
-
-@Document(collection = "journal_entries")
-
-public class JournalEntry {
-    @Id
-    private ObjectId id;
-    @NonNull
-    private String title;
-    private String content;
-    private LocalDateTime date;
-
-    public ObjectId getId() {
-        return id;
-    }
-    public void setId(ObjectId id) {
-        this.id = id;
-    }
-    public String getTitle() {
-        return title;
+    public String getValue() {
+        return value;
     }
 
-    public String getContent() {
-        return content;
+    public void setValue(String value) {
+        this.value = value;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setKey(String key) {
+        this.key = key;
     }
 
-    public LocalDateTime getDate() {
-        return date;
+    public String getKey() {
+        return key;
     }
-
-    public void setDate(LocalDateTime date) {
-        this.date = date;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-
 }

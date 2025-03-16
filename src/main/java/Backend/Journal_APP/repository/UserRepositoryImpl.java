@@ -1,4 +1,4 @@
-package Backend.Journal_APP.service;
+package Backend.Journal_APP.repository;
 
 import Backend.Journal_APP.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +15,8 @@ public class UserRepositoryImpl {
         Query query = new Query();
         query.addCriteria(Criteria.where("email").regex("^[a-zA-Z0-9._%+-]+@gmail\\.com$"));
         query.addCriteria(Criteria.where("sentimentAnalysis").is(true));
-        return mongoTemplate.find(query,User.class);
+         return mongoTemplate.find(query,User.class);
     }
+
+
 }

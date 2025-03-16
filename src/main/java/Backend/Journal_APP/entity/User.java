@@ -24,9 +24,28 @@ public class User {
     @Indexed(unique = true)
     @NonNull
    private String username;
+    private String email;
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     @NonNull
    private String password;
+
+    public boolean isSentimentAnalysis() {
+        return sentimentAnalysis;
+    }
+
+    public void setSentimentAnalysis(boolean sentimentAnalysis) {
+        this.sentimentAnalysis = sentimentAnalysis;
+    }
+
+    private boolean sentimentAnalysis;
 
     public String getPassword() {
         return password;

@@ -17,6 +17,7 @@ import java.util.List;
         @JsonProperty("weather_descriptions")
         private List<String> weatherDescriptions;
         private int feelslike;
+
     }
 
 
